@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "agentos-runtime"
+version = "0.1.0"
+description = "AgentOS Runtime — AI Agent CLI for workplace automation"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [
+  { name = "Mohith Tummala" }
+]
+keywords = ["ai", "agent", "multi-agent-system(MAS)", "cli", "teams", "outlook", "llm", "os", "runtime", "engine"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Operating System :: Microsoft :: Windows",
+  "Topic :: Office/Business",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "click>=8.0",
+  "python-dotenv",
+  "requests",
+  "litellm>=1.0.0",
+  "pywin32; sys_platform == 'win32'",
+  "google-cloud-aiplatform",
+  "vertexai",
+]
+
+[project.scripts]
+agentos = "agentos_cli.main:cli"
+
+[project.urls]
+Homepage = "https://github.com/mohithtummala/agentos-workflow-engine"
+Issues   = "https://github.com/mohithtummala/agentos-workflow-engine/issues"
+
+[tool.setuptools.packages.find]
+include = ["agentos_cli*", "backend*"]
