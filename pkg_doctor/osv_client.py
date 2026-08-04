@@ -5,7 +5,7 @@ from pathlib import Path
 import requests
 
 OSV_BATCH_URL = "https://api.osv.dev/v1/querybatch"
-CONFIG_DIR = Path.home() / ".dep_doctor"
+CONFIG_DIR = Path.home() / ".pkg_doctor"
 CACHE_FILE = CONFIG_DIR / "osv_cache.json"
 CACHE_TTL_SECONDS = 24 * 60 * 60
 
