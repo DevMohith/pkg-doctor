@@ -1,13 +1,24 @@
 # Contributing to pkg-doctor
 
-## Setup
+## Workflow
 
-```bash
-git clone https://github.com/DevMohith/pkg-doctor.git
-cd pkg-doctor
-pip install -e ".[dev]"
-pytest tests/
-```
+All changes go through a pull request against `main` — nobody, including maintainers, pushes directly.
+
+1. **Fork** this repo (button top-right on GitHub) — you'll push your changes to your own fork, not here.
+2. Clone your fork and set up the dev environment:
+   ```bash
+   git clone https://github.com/<your-username>/pkg-doctor.git
+   cd pkg-doctor
+   pip install -e ".[dev]"
+   pytest tests/
+   ```
+3. Create a branch for your change: `git checkout -b add-cargo-lock-support`
+4. Make your change, add tests, commit.
+5. Push to **your fork**: `git push origin add-cargo-lock-support`
+6. Open a PR from your fork's branch against `DevMohith/pkg-doctor:main`. GitHub shows a
+   "Compare & pull request" button after you push — that's the easiest way to start it.
+7. CI (`.github/workflows/tests.yml`) runs automatically on the PR across Windows/macOS/Linux —
+   it needs to be green before merge.
 
 ## Adding support for a new manifest format
 
