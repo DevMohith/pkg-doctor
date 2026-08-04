@@ -1,135 +1,123 @@
-# AgentOS Runtime
+# dep-doctor
 
-AI Agent CLI for workplace automation — schedule meetings, generate workflows, and automate repetitive tasks using natural language.
+Scan your local projects for known-vulnerable or **hijacked** dependencies, and get guided,
+human-approved help rotating any API keys that might be exposed as a result.
 
 ```bash
-pip install agentos-runtime
-agentos init
-agentos schedule "invite john@company.com to onboarding sync tomorrow at 2pm"
-agentos workflow "Create a Workflow Definition for AgentOS Website to execute Enterprise Process Automation"
+pip install dep-doctor
+dep-doctor --path ./my-project
 ```
+
+---
+
+## The problem
+
+Every so often a popular package gets compromised — a maintainer's account is hijacked, or malicious
+code slips into a new release. When it happens, the advisory that follows always says the same thing:
+**"rotate all your API keys."** Nobody actually knows which of their dozen local projects use the
+affected version, so people either panic-rotate everything or ignore the warning and hope for the best.
+
+`dep-doctor` replaces the guessing with one command: it tells you exactly which local projects are
+affected, and walks you through fixing exactly those — nothing more.
 
 ---
 
 ## What it does
 
-AgentOS Runtime gives you a terminal command (`agentos`) that uses an AI agent (ReAct loop with LLM function calling) to:
+```bash
+dep-doctor --path ~/projects/foo
+dep-doctor --path ~/projects/foo --path ~/projects/bar --include-self
+```
 
-- **Schedule Teams meetings** from plain English — the agent reasons about your request, generates a rich meeting agenda, opens Outlook, and sends the invite
-- **Attach files** (PDF, Word, invoices) to meeting invites
-- **Generate agentic workflows** for multi-step enterprise processes (requires AgentOS backend)
+1. **Scans the directories you name** for dependency manifests (`requirements.txt`, `package-lock.json`)
+   — nothing is scanned unless you pass `--path`.
+2. **Checks every pinned package against [OSV.dev](https://osv.dev)** — a free, public vulnerability
+   database that also ingests the OpenSSF malicious-packages feed, which is exactly the "a package got
+   hijacked" case, not just an ordinary CVE. Results are flagged and clearly distinguished:
+   `MALICIOUS PACKAGE` vs. `VULNERABLE`.
+3. **If a project is flagged**, it checks that project's `.env`/config files for key-shaped strings
+   (OpenAI, Anthropic, Google, AWS, GitHub patterns, plus a lower-confidence generic fallback) —
+   values are only ever shown masked (`sk-ab12...wx9y`), never logged or transmitted anywhere.
+4. **For each possible exposed key, it asks you first.** Nothing is ever rotated automatically. Say
+   yes, and it opens the provider's key-management dashboard in your browser and walks you through
+   revoking the old key and generating a new one — then waits for your confirmation before moving on.
 
----
-
-## Requirements
-
-- Python 3.10+
-- Windows (Outlook COM automation requires Outlook desktop installed and logged in)
-- One of: Gemini API key, OpenAI API key, Anthropic API key, GCP service account, or any LiteLLM-supported provider
+No API key, no LLM, no account required. It never sends anything more than a package name, ecosystem,
+and version to OSV.dev — never file contents, paths, or secret values.
 
 ---
 
 ## Install
 
 ```bash
-pip install agentos-runtime
+pip install dep-doctor
 ```
 
----
-
-## Setup
-
-```bash
-agentos init
-```
-
-The setup wizard asks you:
-1. Which LLM provider (OpenAI, Anthropic, Gemini, Vertex AI, Groq, Azure, Kimi...)
-2. Your API key or GCP service account path
-3. Your Outlook email (must be logged into Outlook desktop)
-4. AgentOS server URL (leave default if running locally)
-
-Config is saved to `~/.agentos/config.json` — your keys stay on your machine.
+Works on Windows, macOS, and Linux - Python 3.10+, only two dependencies (`click`, `requests`).
 
 ---
 
 ## Usage
 
-### Schedule a Teams meeting
-
 ```bash
-agentos schedule "invite sarah@company.com to 1:1 sync tomorrow at 3pm"
+# Scan one project
+dep-doctor --path ./my-project
 
-agentos schedule "onboarding kickoff for John on April 20 at 10am for 2 hours"
+# Scan several at once
+dep-doctor --path ~/dev/billing-service --path ~/dev/auth-service
 
-agentos schedule "PROCESS.AI discussion with team@co.com on 15/04 from 14:00 to 16:00" \
-  -a project_brief.pdf \
-  -a onboarding_checklist.docx
+# Also audit dep-doctor's own installed dependencies
+dep-doctor --path ./my-project --include-self
+
+# Skip the config-file scan entirely (vulnerability check only)
+dep-doctor --path ./my-project --skip-secrets
 ```
 
-The agent will:
-1. Resolve the date and time
-2. Ask for any missing attendee emails via a popup
-3. Generate a full meeting agenda using the LLM
-4. Open Outlook and send the invite with all attachments
+Example output:
 
-### Generate a workflow
-
-```bash
-# Requires AgentOS backend running: python run.py
-agentos workflow "onboard a new employee with HR, IT and procurement steps"
-agentos workflow "laptop procurement with manager approval" --name laptop_flow
 ```
+~/dev/billing-service
+  MALICIOUS PACKAGE: some-lib==2.1.0 (MAL-2026-4821)
+    https://osv.dev/vulnerability/MAL-2026-4821
 
-### Manage config
-
-```bash
-agentos config show                          
-agentos config set organizer_email x@co.com  
-agentos config set server_url https://api.yourdomain.com
-```
-
-### commands sheet
-```bash
-agentos --help
+  Possible exposed secret (high confidence)
+    Provider: OpenAI
+    File:     ~/dev/billing-service/.env
+    Value:    sk-ab12...wx9y
+  Rotate this key now? [y/N]:
 ```
 
 ---
 
-## Supported LLM Providers
+## What it deliberately does not do
 
-| Provider | How to configure |
-|---|---|
-| OpenAI (GPT-4o, GPT-4-turbo) | API key from platform.openai.com |
-| Anthropic (Claude Sonnet/Opus) | API key from console.anthropic.com |
-| Google Gemini | API key from aistudio.google.com |
-| Google Vertex AI | GCP service account JSON + project ID |
-| Groq (LLaMA, Mixtral) | API key from console.groq.com |
-| Kimi / Moonshot | API key from platform.moonshot.cn |
-| Azure OpenAI | API key + endpoint URL |
-
-Switch provider anytime: `agentos config set llm_provider openai`
+- **Never rotates anything without your explicit `y`** — no automation, no "trust me" mode.
+- **Never touches secrets managers** (HashiCorp Vault, AWS Secrets Manager, etc.) — it only reads local
+  flat files (`.env`, `.env.local`, `.env.production`, `.env.development`, `config.json`, `secrets.json`,
+  `credentials.json`, `.npmrc`). If your secrets already live in a real vault, this tool has nothing to
+  say about them — but the dependency-vulnerability check still applies regardless of where secrets live.
+- **Never scans anything you didn't name** — no default-scan-your-whole-drive behavior.
+- **Never calls an LLM** — this is plain text/JSON/TOML/YAML parsing plus one REST API call to OSV.dev.
+  Nothing here reads or transmits your files through a language model.
 
 ---
 
-## How it works
+## Supported manifests
 
-```
-agentos schedule "..."
-       │
-       ▼
-CLI loads ~/.agentos/config.json → sets env vars
-       │
-       ▼
-ReAct Loop (LLM reasons + calls tools):
-  1. get_current_date      → resolves relative dates
-  2. ask_user_for_input    → popup for missing emails
-  3. generate_agenda       → LLM writes meeting email body
-  4. schedule_meeting      → Outlook COM creates + sends invite
-       │
-       ▼
-Outlook opens live → invite delivered to attendees
-```
+| Ecosystem | File | Notes |
+|---|---|---|
+| Python (pip) | `requirements.txt` | Exact-pinned `name==version` lines only — unpinned lines are reported separately, not silently skipped |
+| Python (Poetry) | `poetry.lock` | |
+| Node (npm) | `package-lock.json` | Lockfile v1/v2/v3 |
+| Node (Yarn) | `yarn.lock` | Classic (v1) and Berry (v2+) |
+| Node (pnpm) | `pnpm-lock.yaml` | lockfileVersion 5/6/9 key formats |
+| Go | `go.sum` | |
+| Java/Kotlin (Gradle) | `gradle.lockfile` | Modern single-file dependency locking (opt-in via `dependencyLocking`) |
+| Java (Maven) | `pom.xml` | Only literally-pinned `<version>` tags — versions from a parent POM/BOM, a `${property}`, or a range are reported as unverifiable, not guessed at (Maven has no resolved-lockfile equivalent) |
+
+Other manifests found (`Pipfile.lock`, `Gemfile.lock`, `build.gradle`, `build.gradle.kts`) are reported as
+"found but not yet supported" rather than silently ignored — `build.gradle`/`.kts` are executable
+scripts, not data, so they aren't parsed; enable Gradle dependency locking for accurate scanning instead.
 
 ---
 

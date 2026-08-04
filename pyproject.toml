@@ -3,40 +3,37 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agentos-runtime"
+name = "dep-doctor"
 version = "0.1.0"
-description = "AgentOS Runtime — AI Agent CLI for workplace automation"
+description = "Scan local projects for known-vulnerable or malicious dependencies, and get guided help rotating exposed API keys."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 authors = [
   { name = "Mohith Tummala" }
 ]
-keywords = ["ai", "agent", "multi-agent-system(MAS)", "cli", "teams", "outlook", "llm", "os", "runtime", "engine"]
+keywords = ["security", "dependencies", "vulnerability", "supply-chain", "secrets", "cli", "osv", "sbom"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
-  "Operating System :: Microsoft :: Windows",
-  "Topic :: Office/Business",
-  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Operating System :: OS Independent",
+  "Topic :: Security",
+  "Environment :: Console",
 ]
 dependencies = [
   "click>=8.0",
-  "python-dotenv",
   "requests",
-  "litellm>=1.0.0",
-  "pywin32; sys_platform == 'win32'",
-  "google-cloud-aiplatform",
-  "vertexai",
+  "pyyaml",
+  "tomli>=2.0; python_version < '3.11'",
 ]
 
 [project.scripts]
-agentos = "agentos_cli.main:cli"
+dep-doctor = "dep_doctor.cli:cli"
 
 [project.urls]
-Homepage = "https://github.com/mohithtummala/agentos-workflow-engine"
-Issues   = "https://github.com/mohithtummala/agentos-workflow-engine/issues"
+Homepage = "https://github.com/DevMohith/dep-doctor"
+Issues   = "https://github.com/DevMohith/dep-doctor/issues"
 
 [tool.setuptools.packages.find]
-include = ["agentos_cli*", "backend*"]
+include = ["dep_doctor*"]
