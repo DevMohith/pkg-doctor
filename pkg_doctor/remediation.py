@@ -22,8 +22,9 @@ def run_remediation(finding, project_dir) -> str:
     Present one secret finding to the user and, only on explicit confirmation, walk them through
     a browser-guided manual rotation. Never rotates anything automatically. Returns "rotated" or "skipped".
     """
+    label = "Provider" if finding.confidence == "high" else "Variable"
     click.echo(f"\n  {YELLOW}Possible exposed secret{RESET} ({finding.confidence} confidence)")
-    click.echo(f"    Provider: {finding.provider}")
+    click.echo(f"    {label}:  {finding.provider}")
     click.echo(f"    File:     {finding.file_path}")
     click.echo(f"    Value:    {finding.masked_value}")
 

@@ -35,9 +35,11 @@ pkg-doctor --path ~/projects/foo --path ~/projects/bar --include-self
    database that also ingests the OpenSSF malicious-packages feed, which is exactly the "a package got
    hijacked" case, not just an ordinary CVE. Results are flagged and clearly distinguished:
    `MALICIOUS PACKAGE` vs. `VULNERABLE`.
-3. **If a project is flagged**, it checks that project's `.env`/config files for key-shaped strings
-   (OpenAI, Anthropic, Google, AWS, GitHub patterns, plus a lower-confidence generic fallback) -
-   values are only ever shown masked (`sk-ab12...wx9y`), never logged or transmitted anywhere.
+3. **If a project is flagged**, it checks that project's `.env`/config files - not by guessing at
+   variable names (anyone can name a credential anything), but by surfacing *every* assignment for
+   you to judge. A value matching a known shape (OpenAI, Anthropic, Google, AWS, GitHub) gets a
+   precise high-confidence label; everything else is still surfaced, just marked low-confidence.
+   Values are only ever shown masked (`sk-ab12...wx9y`), never logged or transmitted anywhere.
 4. **For each possible exposed key, it asks you first.** Nothing is ever rotated automatically. Say
    yes, and it opens the provider's key-management dashboard in your browser and walks you through
    revoking the old key and generating a new one - then waits for your confirmation before moving on.
