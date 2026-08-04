@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pkg-doctor"
-version = "0.1.0"
+version = "0.1.1"
 description = "Scan local projects for known-vulnerable or malicious dependencies, and get guided help rotating exposed API keys."
 readme = "README.md"
 license = "MIT"
@@ -28,6 +28,9 @@ dependencies = [
   "pyyaml",
   "tomli>=2.0; python_version < '3.11'",
 ]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
 
 [project.scripts]
 pkg-doctor = "pkg_doctor.cli:cli"

@@ -1,5 +1,10 @@
 # pkg-doctor
 
+[![PyPI](https://img.shields.io/pypi/v/pkg-doctor.svg)](https://pypi.org/project/pkg-doctor/)
+[![Python versions](https://img.shields.io/pypi/pyversions/pkg-doctor.svg)](https://pypi.org/project/pkg-doctor/)
+[![Tests](https://github.com/DevMohith/pkg-doctor/actions/workflows/tests.yml/badge.svg)](https://github.com/DevMohith/pkg-doctor/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Scan your local projects for known-vulnerable or **hijacked** dependencies, and get guided,
 human-approved help rotating any API keys that might be exposed as a result.
 
